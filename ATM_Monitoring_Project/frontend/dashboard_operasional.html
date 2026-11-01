@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATM Operations Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
+        .sidebar { background-color: #1e3a8a; }
+        .glass-modal { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .stat-card { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 4px solid; }
+        .chart-container { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800 text-sm">
+
+    <!-- Sidebar -->
+    <aside class="w-56 sidebar text-white flex flex-col flex-shrink-0">
+        <div class="p-4 flex items-center gap-3 border-b border-blue-800 mb-2">
+            <i class="fa-solid fa-server text-2xl"></i>
+            <div>
+                <h1 class="font-bold text-sm leading-tight">ATM Operations Center</h1>
+                <p class="text-[10px] text-blue-300">Service | Reliability | Together</p>
+            </div>
+        </div>
+        <nav class="flex-1 px-2 space-y-1 overflow-y-auto">
+            <a href="#" class="flex items-center gap-3 bg-blue-700/50 rounded p-2.5 text-sm font-medium"><i class="fa-solid fa-house w-5 text-center"></i> Dashboard</a>
+            <a href="#" class="flex items-center gap-3 hover:bg-blue-800 rounded p-2.5 text-sm text-gray-300 hover:text-white transition-colors"><i class="fa-regular fa-calendar w-5 text-center"></i> Calendar</a>
+            <a href="#" class="flex items-center gap-3 hover:bg-blue-800 rounded p-2.5 text-sm text-gray-300 hover:text-white transition-colors"><i class="fa-solid fa-microchip w-5 text-center"></i> Master Mesin</a>
+            <a href="#" class="flex items-center gap-3 hover:bg-blue-800 rounded p-2.5 text-sm text-gray-300 hover:text-white transition-colors"><i class="fa-solid fa-users-gear w-5 text-center"></i> Master Teknisi</a>
+            <a href="#" class="flex items-center gap-3 hover:bg-blue-800 rounded p-2.5 text-sm text-gray-300 hover:text-white transition-colors"><i class="fa-solid fa-clipboard-list w-5 text-center"></i> Visit & Ticket Log</a>
+            <a href="#" class="flex items-center gap-3 hover:bg-blue-800 rounded p-2.5 text-sm text-gray-300 hover:text-white transition-colors"><i class="fa-solid fa-wrench w-5 text-center"></i> Part Request</a>
+            <a href="#" class="flex items-center gap-3 hover:bg-blue-800 rounded p-2.5 text-sm text-gray-300 hover:text-white transition-colors"><i class="fa-solid fa-chart-line w-5 text-center"></i> Reports</a>
+            <a href="#" class="flex items-center gap-3 hover:bg-blue-800 rounded p-2.5 text-sm text-gray-300 hover:text-white transition-colors"><i class="fa-solid fa-gear w-5 text-center"></i> Settings</a>
+        </nav>
+        <div class="p-4 border-t border-blue-800 mt-auto flex items-center justify-center flex-col text-center">
+             <i class="fa-solid fa-gas-pump text-3xl text-blue-300 mb-2 opacity-50"></i>
+             <p class="text-xs font-semibold text-blue-200">Keep the ATM Running</p>
+             <p class="text-[10px] text-blue-400 mt-1">Better Service<br>for a Better Tomorrow</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#f8fafc]">
+        
+        <!-- Header -->
+        <header class="bg-[#1e3a8a] text-white p-3 shadow flex justify-between items-center z-10 flex-shrink-0">
+            <div class="ml-4">
+                <h2 class="text-lg font-bold leading-tight">ATM Operations Dashboard</h2>
+                <p class="text-[11px] text-blue-200">PM / CM Maintenance Overview</p>
+            </div>
+            <div class="flex items-center gap-6 mr-4">
+                <div class="flex items-center gap-2 text-sm text-blue-100">
+                    <i class="fa-regular fa-calendar"></i> Selasa, 29 April 2025
+                </div>
+                <div class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                    <div class="w-7 h-7 rounded-full bg-blue-200 text-blue-800 flex items-center justify-center text-xs"><i class="fa-solid fa-user"></i></div>
+                    Zona Leader <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filters (Top Bar) -->
+        <div class="bg-white p-3 border-b flex gap-4 items-end flex-shrink-0 shadow-sm z-0">
+            <div class="flex-1">
+                <label class="block text-[11px] font-semibold text-gray-500 mb-1">Periode</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none"><i class="fa-regular fa-calendar text-gray-400"></i></div>
+                    <select class="w-full border rounded p-1.5 pl-7 text-xs bg-gray-50 focus:ring-1 focus:ring-blue-500 outline-none appearance-none">
+                        <option>April 2025</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none"><i class="fa-solid fa-chevron-down text-gray-400 text-[10px]"></i></div>
+                </div>
+            </div>
+             <div class="flex-1">
+                <label class="block text-[11px] font-semibold text-gray-500 mb-1">Zona</label>
+                <select class="w-full border rounded p-1.5 text-xs bg-gray-50 focus:ring-1 focus:ring-blue-500 outline-none appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:calc(100%-8px)_center]">
+                    <option>Semua Zona</option>
+                </select>
+            </div>
+             <div class="flex-1">
+                <label class="block text-[11px] font-semibold text-gray-500 mb-1">Customer / Bank</label>
+                <select class="w-full border rounded p-1.5 text-xs bg-gray-50 focus:ring-1 focus:ring-blue-500 outline-none appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:calc(100%-8px)_center]">
+                    <option>Semua Customer</option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <label class="block text-[11px] font-semibold text-gray-500 mb-1">Lokasi / KC</label>
+                <select class="w-full border rounded p-1.5 text-xs bg-gray-50 focus:ring-1 focus:ring-blue-500 outline-none appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:calc(100%-8px)_center]">
+                    <option>Semua Lokasi</option>
+                </select>
+            </div>
+             <div class="flex-1">
+                <label class="block text-[11px] font-semibold text-gray-500 mb-1">Type Mesin</label>
+                <select class="w-full border rounded p-1.5 text-xs bg-gray-50 focus:ring-1 focus:ring-blue-500 outline-none appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:calc(100%-8px)_center]">
+                    <option>Semua Type</option>
+                </select>
+            </div>
+            <button class="bg-[#1e3a8a] text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-800 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> Reset Filter
+            </button>
+        </div>
+
+        <!-- Scrollable Dashboard Content -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+            
+            <!-- ROW 1: KPI Cards -->
+            <div class="grid grid-cols-6 gap-3">
+                <div class="stat-card border-blue-400 flex items-center">
+                    <div class="w-10 h-10 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-lg mr-3"><i class="fa-solid fa-server"></i></div>
+                    <div>
+                        <p class="text-[11px] text-gray-500 font-semibold mb-0.5 text-blue-800">Total Mesin</p>
+                        <h3 class="text-2xl font-bold text-gray-800 leading-none">786</h3>
+                        <p class="text-[9px] text-green-600 font-medium mt-1"><i class="fa-solid fa-arrow-up"></i> 2.6% <span class="text-gray-400 font-normal">vs bulan lalu</span></p>
+                    </div>
+                </div>
+                <div class="stat-card border-green-500 flex items-center">
+                    <div class="w-10 h-10 rounded bg-green-500 text-white flex items-center justify-center text-lg mr-3 shadow-sm"><i class="fa-regular fa-calendar-check"></i></div>
+                    <div class="w-full">
+                        <p class="text-[11px] text-gray-500 font-semibold mb-0.5 text-blue-800">PM Bulan Ini</p>
+                        <h3 class="text-2xl font-bold text-gray-800 leading-none">642</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-1 mt-1.5 mb-0.5"><div class="bg-green-500 h-1 rounded-full" style="width: 81.7%"></div></div>
+                        <p class="text-[9px] text-gray-500 font-medium text-right"><b>81.7%</b> dari total mesin</p>
+                    </div>
+                </div>
+                <div class="stat-card border-purple-500 flex items-center">
+                    <div class="w-10 h-10 rounded bg-purple-500 text-white flex items-center justify-center text-lg mr-3 shadow-sm"><i class="fa-solid fa-check"></i></div>
+                    <div class="w-full">
+                        <p class="text-[11px] text-gray-500 font-semibold mb-0.5 text-blue-800">PM Completed</p>
+                        <h3 class="text-2xl font-bold text-purple-700 leading-none">598</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-1 mt-1.5 mb-0.5"><div class="bg-purple-500 h-1 rounded-full" style="width: 93.1%"></div></div>
+                        <p class="text-[9px] text-gray-500 font-medium text-right"><b>93.1%</b> dari target</p>
+                    </div>
+                </div>
+                <div class="stat-card border-yellow-400 flex items-center">
+                    <div class="w-10 h-10 rounded bg-yellow-400 text-white flex items-center justify-center text-lg mr-3 shadow-sm"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                     <div class="w-full">
+                        <p class="text-[11px] text-gray-500 font-semibold mb-0.5 text-blue-800">CM Open</p>
+                        <h3 class="text-2xl font-bold text-yellow-600 leading-none">28</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-1 mt-1.5 mb-0.5"><div class="bg-yellow-400 h-1 rounded-full" style="width: 3.6%"></div></div>
+                        <p class="text-[9px] text-gray-500 font-medium text-right"><b>3.6%</b> dari total mesin</p>
+                    </div>
+                </div>
+                <div class="stat-card border-red-500 flex items-center">
+                    <div class="w-10 h-10 rounded bg-red-500 text-white flex items-center justify-center text-lg mr-3 shadow-sm"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                     <div class="w-full">
+                        <p class="text-[11px] text-gray-500 font-semibold mb-0.5 text-blue-800">Overdue PM</p>
+                        <h3 class="text-2xl font-bold text-red-600 leading-none">14</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-1 mt-1.5 mb-0.5 relative"><div class="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-red-500"></div><div class="bg-red-200 h-1 rounded-full" style="width: 100%"></div></div>
+                        <p class="text-[9px] text-gray-500 font-medium text-right"><b>1.8%</b> dari total mesin</p>
+                    </div>
+                </div>
+                <div class="stat-card border-teal-500 flex items-center relative">
+                    <div class="absolute top-2 right-2 text-gray-300 text-xs"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                    <div class="w-10 h-10 rounded bg-teal-500 text-white flex items-center justify-center text-lg mr-3 shadow-sm"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="w-full">
+                        <p class="text-[11px] text-gray-500 font-semibold mb-0.5 text-blue-800">Warranty ≤ 90 Hari</p>
+                        <h3 class="text-2xl font-bold text-teal-600 leading-none">32</h3>
+                         <div class="w-full bg-gray-200 rounded-full h-1 mt-1.5 mb-0.5 relative"><div class="absolute left-[4.1%] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-teal-500"></div><div class="bg-teal-100 h-1 rounded-full" style="width: 100%"></div></div>
+                        <p class="text-[9px] text-gray-500 font-medium text-right"><b>4.1%</b> dari total mesin</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: Charts -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="chart-container col-span-1 h-64 flex flex-col relative">
+                     <div class="absolute top-3 right-3 text-gray-300 text-xs"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                    <h3 class="text-xs font-bold text-gray-800 mb-2">Trend PM & CM (12 Bulan Terakhir)</h3>
+                    <div class="flex-1 relative w-full h-full">
+                         <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container col-span-1 h-64 flex flex-col relative">
+                    <div class="absolute top-3 right-3 text-gray-300 text-xs"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                    <h3 class="text-xs font-bold text-gray-800 mb-2">Distribusi Mesin per Zona</h3>
+                    <div class="flex-1 relative w-full h-full">
+                        <canvas id="zonaChart"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
+                             <span class="text-xl font-bold text-gray-800 leading-none">786</span>
+                             <span class="text-[10px] text-gray-500 font-medium">Mesin</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container col-span-1 h-64 flex flex-col relative">
+                     <div class="absolute top-3 right-3 text-gray-300 text-xs"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                    <h3 class="text-xs font-bold text-gray-800 mb-2">Status Garansi Mesin</h3>
+                    <div class="flex-1 relative w-full h-full">
+                        <canvas id="garansiChart"></canvas>
+                         <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2 -ml-24">
+                             <span class="text-xl font-bold text-gray-800 leading-none">786</span>
+                             <span class="text-[10px] text-gray-500 font-medium">Mesin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 3: More Charts & Maps -->
+             <div class="grid grid-cols-3 gap-3">
+                <div class="chart-container col-span-1 h-64 flex flex-col relative overflow-hidden">
+                     <div class="absolute top-3 right-3 text-gray-300 text-xs z-10"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                    <h3 class="text-xs font-bold text-gray-800 mb-2 z-10">Sebaran Mesin per Lokasi</h3>
+                    <!-- SVG Map -->
+                    <div class="absolute inset-0 mt-8 opacity-20 pointer-events-none flex justify-center items-center">
+                        <svg viewBox="0 0 1000 400" class="w-[120%] h-auto fill-blue-800">
+                             <!-- Simplified Indonesia path for visual effect -->
+                            <path d="M150,150 Q180,120 220,160 T350,250 T500,280 T650,220 T800,200 T900,250 Q850,280 750,300 T550,320 T350,300 T200,250 Z" />
+                            <circle cx="200" cy="160" r="10" class="fill-green-500 opacity-100"/><text x="200" y="145" class="text-xs fill-gray-800 font-bold opacity-100">Medan</text>
+                            <circle cx="300" cy="220" r="8" class="fill-orange-400 opacity-100"/><text x="300" y="205" class="text-xs fill-gray-800 font-bold opacity-100">Palembang</text>
+                            <circle cx="350" cy="280" r="15" class="fill-orange-400 opacity-100"/><text x="350" y="260" class="text-xs fill-gray-800 font-bold opacity-100">Jakarta</text>
+                            <circle cx="450" cy="270" r="12" class="fill-green-500 opacity-100"/><text x="450" y="255" class="text-xs fill-gray-800 font-bold opacity-100">Semarang</text>
+                            <circle cx="550" cy="290" r="14" class="fill-orange-400 opacity-100"/><text x="550" y="275" class="text-xs fill-gray-800 font-bold opacity-100">Surabaya</text>
+                            <circle cx="700" cy="240" r="6" class="fill-blue-500 opacity-100"/><text x="700" y="225" class="text-xs fill-gray-800 font-bold opacity-100">Makassar</text>
+                        </svg>
+                    </div>
+                    <!-- Custom Map Legend -->
+                     <div class="absolute right-3 top-8 bg-white/80 p-2 rounded border text-[10px] space-y-1 backdrop-blur-sm z-10 shadow-sm">
+                        <p class="font-semibold text-gray-700 mb-1">Jumlah Mesin</p>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-700"></div> > 100</div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-500"></div> 51 - 100</div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-400"></div> 21 - 50</div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-200"></div> ≤ 20</div>
+                    </div>
+                </div>
+                <div class="chart-container col-span-1 h-64 flex flex-col relative">
+                     <div class="absolute top-3 right-3 text-gray-300 text-xs"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                    <h3 class="text-xs font-bold text-gray-800 mb-2">Top 5 Customer <span class="text-gray-400 font-normal">(Jumlah Mesin)</span></h3>
+                    <div class="flex-1 relative w-full h-full">
+                         <canvas id="custChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container col-span-1 h-64 flex flex-col relative">
+                     <div class="absolute top-3 right-3 text-gray-300 text-xs"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                    <h3 class="text-xs font-bold text-gray-800 mb-2">Type Mesin Terbanyak</h3>
+                    <div class="flex-1 relative w-full h-full">
+                        <canvas id="typeChart"></canvas>
+                         <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2 -ml-24">
+                             <span class="text-xl font-bold text-gray-800 leading-none">786</span>
+                             <span class="text-[10px] text-gray-500 font-medium">Mesin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 4: Calendar & Lists -->
+            <div class="grid grid-cols-3 gap-3 pb-6">
+                <!-- Calendar Widget -->
+                <div class="chart-container col-span-1 border-t-4 border-blue-600 flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-gray-800">Jadwal PM / CM - Kalender Bulan</h3>
+                        <div class="flex items-center gap-2">
+                             <div class="flex bg-gray-100 rounded p-0.5 text-[10px]">
+                                <button class="px-2 py-1 bg-white shadow-sm rounded text-blue-700 font-semibold">Month</button>
+                                <button class="px-2 py-1 text-gray-500 hover:text-gray-700">Week</button>
+                                <button class="px-2 py-1 text-gray-500 hover:text-gray-700">Day</button>
+                             </div>
+                        </div>
+                    </div>
+                    <!-- Dummy Calendar Grid -->
+                    <div class="flex-1 border rounded text-[10px] bg-white flex flex-col">
+                        <div class="grid grid-cols-7 border-b bg-gray-50 font-semibold text-center text-gray-600 py-1">
+                            <div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div><div>Min</div>
+                        </div>
+                        <div class="flex-1 grid grid-cols-7 grid-rows-5 gap-px bg-gray-200">
+                             <!-- Week 1 -->
+                            <div class="bg-white p-1 text-gray-400">31</div>
+                            <div class="bg-white p-1">1 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (3)</div></div>
+                            <div class="bg-white p-1">2 <div class="bg-orange-100 text-orange-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block mr-0.5"></span>CM (1)</div></div>
+                            <div class="bg-white p-1">3</div>
+                            <div class="bg-white p-1">4 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (4)</div></div>
+                            <div class="bg-white p-1 text-gray-500 bg-gray-50">5</div>
+                            <div class="bg-white p-1 text-gray-500 bg-gray-50">6</div>
+                             <!-- Week 2 -->
+                            <div class="bg-white p-1">7 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (2)</div></div>
+                            <div class="bg-white p-1">8</div>
+                            <div class="bg-white p-1">9 <div class="bg-orange-100 text-orange-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block mr-0.5"></span>CM (1)</div></div>
+                            <div class="bg-white p-1">10 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (2)</div></div>
+                            <div class="bg-white p-1">11 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (3)</div></div>
+                            <div class="bg-white p-1 text-gray-500 bg-gray-50">12 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap opacity-50"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (1)</div></div>
+                            <div class="bg-white p-1 text-gray-500 bg-gray-50">13 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap opacity-50"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (4)</div></div>
+                             <!-- Week 3 -->
+                             <div class="bg-white p-1">14 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (2)</div></div>
+                             <div class="bg-white p-1">15 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (3)</div></div>
+                             <div class="bg-white p-1">16 <div class="bg-orange-100 text-orange-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block mr-0.5"></span>CM (1)</div></div>
+                             <div class="bg-white p-1">17 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (2)</div></div>
+                             <div class="bg-white p-1">18 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (3)</div></div>
+                             <div class="bg-white p-1 text-gray-500 bg-gray-50">19 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap opacity-50"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (2)</div></div>
+                             <div class="bg-white p-1 text-gray-500 bg-gray-50">20 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap opacity-50"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (1)</div></div>
+                             <!-- Week 4 -->
+                             <div class="bg-white p-1">21 <div class="bg-orange-100 text-orange-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block mr-0.5"></span>CM (2)</div></div>
+                             <div class="bg-white p-1">22 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (3)</div></div>
+                             <div class="bg-white p-1">23 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (2)</div></div>
+                             <div class="bg-white p-1">24 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (4)</div></div>
+                             <div class="bg-white p-1">25 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (3)</div></div>
+                             <div class="bg-white p-1 text-gray-500 bg-gray-50">26 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap opacity-50"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (2)</div></div>
+                             <div class="bg-white p-1 text-gray-500 bg-gray-50">27 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap opacity-50"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (1)</div></div>
+                             <!-- Week 5 -->
+                             <div class="bg-white p-1">28 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (3)</div></div>
+                             <div class="bg-blue-50 p-1 border border-blue-300 shadow-inner">29 <span class="text-[8px] font-bold text-blue-700">Today</span><div class="bg-blue-500 text-white rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-white inline-block mr-0.5"></span>PM (2)</div></div>
+                             <div class="bg-white p-1">30 <div class="bg-blue-100 text-blue-700 rounded-sm px-1 mt-0.5 text-[8px] truncate whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block mr-0.5"></span>PM (1)</div></div>
+                             <div class="bg-white p-1 text-gray-400">1</div>
+                             <div class="bg-white p-1 text-gray-400">2</div>
+                             <div class="bg-white p-1 text-gray-300 bg-gray-50">3</div>
+                             <div class="bg-white p-1 text-gray-300 bg-gray-50">4</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule & Alerts -->
+                <div class="col-span-1 flex flex-col gap-3">
+                    <div class="chart-container flex-1 overflow-hidden flex flex-col">
+                        <div class="flex justify-between items-center mb-2">
+                             <h3 class="text-xs font-bold text-gray-800">Upcoming Schedule</h3>
+                             <a href="#" class="text-[10px] text-blue-600 hover:underline">Lihat Semua</a>
+                        </div>
+                        <div class="overflow-x-auto flex-1">
+                            <table class="w-full text-left text-[10px] whitespace-nowrap">
+                                <thead>
+                                    <tr class="text-gray-500 border-b">
+                                        <th class="pb-1 font-medium">Tanggal</th>
+                                        <th class="pb-1 font-medium">Tipe</th>
+                                        <th class="pb-1 font-medium">Lokasi / KC</th>
+                                        <th class="pb-1 font-medium">Teknisi</th>
+                                        <th class="pb-1 font-medium text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-700 divide-y">
+                                    <tr>
+                                        <td class="py-1.5">29 Apr 2025</td>
+                                        <td><span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div> PM</span></td>
+                                        <td>BRI Solo Kartasura</td>
+                                        <td>Andi</td>
+                                        <td class="text-right text-green-600"><i class="fa-solid fa-circle-check"></i> Scheduled</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-1.5">29 Apr 2025</td>
+                                        <td><span class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-purple-500"></div> CM</span></td>
+                                        <td>BRI Solo Slamet Riyadi</td>
+                                        <td>Budi</td>
+                                        <td class="text-right text-green-600"><i class="fa-solid fa-circle-check"></i> Scheduled</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-1.5">30 Apr 2025</td>
+                                        <td><span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div> PM</span></td>
+                                        <td>BRI Semarang</td>
+                                        <td>Candra</td>
+                                        <td class="text-right text-green-600"><i class="fa-solid fa-circle-check"></i> Scheduled</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-1.5">30 Apr 2025</td>
+                                        <td><span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div> PM</span></td>
+                                        <td>BCA Yogyakarta</td>
+                                        <td>Dedi</td>
+                                        <td class="text-right text-green-600"><i class="fa-solid fa-circle-check"></i> Scheduled</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-1.5">01 Mei 2025</td>
+                                        <td><span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div> PM</span></td>
+                                        <td>Mandiri Surabaya</td>
+                                        <td>Eko</td>
+                                        <td class="text-right text-green-600"><i class="fa-solid fa-circle-check"></i> Scheduled</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-1.5">01 Mei 2025</td>
+                                        <td><span class="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-orange-500"></div> CM</span></td>
+                                        <td>BNI Malang</td>
+                                        <td>Fajar</td>
+                                        <td class="text-right text-green-600"><i class="fa-solid fa-circle-check"></i> Scheduled</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="flex justify-between items-center mb-2">
+                             <h3 class="text-xs font-bold text-gray-800">Notifikasi & Alert</h3>
+                             <a href="#" class="text-[10px] text-blue-600 hover:underline">Lihat Semua</a>
+                        </div>
+                        <ul class="space-y-2 text-[11px]">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-triangle-exclamation text-red-500 mt-0.5"></i>
+                                <span class="text-gray-700 font-medium">14 mesin overdue PM (lebih dari 30 hari)</span>
+                            </li>
+                             <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-triangle-exclamation text-orange-500 mt-0.5"></i>
+                                <span class="text-gray-700 font-medium">28 visit belum closed (menunggu report teknisi)</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-triangle-exclamation text-yellow-500 mt-0.5"></i>
+                                <span class="text-gray-700 font-medium">32 mesin garansi akan berakhir ≤ 90 hari</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
+                                <span class="text-gray-600">Ada 5 part request yang belum ditindaklanjuti</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="col-span-1 flex flex-col gap-3">
+                    <div class="chart-container flex-1 overflow-hidden flex flex-col">
+                        <div class="flex justify-between items-center mb-3">
+                             <h3 class="text-xs font-bold text-gray-800">Aktivitas Terbaru</h3>
+                             <a href="#" class="text-[10px] text-blue-600 hover:underline">Lihat Semua</a>
+                        </div>
+                        <div class="flex-1 overflow-y-auto pr-1 space-y-4">
+                            <!-- Activity Item 1 -->
+                            <div class="flex gap-3 relative">
+                                <div class="absolute left-3.5 top-8 bottom-[-16px] w-px bg-gray-200"></div>
+                                <div class="w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 z-10 border-2 border-white"><i class="fa-solid fa-check"></i></div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-gray-800">PM - BRI Solo Kartasura</p>
+                                    <p class="text-[10px] text-gray-500">SN: 12345678  |  Andi  |  29 Apr 2025 08:30</p>
+                                </div>
+                            </div>
+                            <!-- Activity Item 2 -->
+                            <div class="flex gap-3 relative">
+                                <div class="absolute left-3.5 top-8 bottom-[-16px] w-px bg-gray-200"></div>
+                                <div class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 z-10 border-2 border-white"><i class="fa-solid fa-wrench"></i></div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-gray-800">CM - BRI Slamet Riyadi</p>
+                                    <p class="text-[10px] text-gray-500">SN: 87654321  |  Budi  |  28 Apr 2025 14:20</p>
+                                </div>
+                            </div>
+                             <!-- Activity Item 3 -->
+                            <div class="flex gap-3 relative">
+                                <div class="absolute left-3.5 top-8 bottom-[-16px] w-px bg-gray-200"></div>
+                                <div class="w-7 h-7 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 z-10 border-2 border-white"><i class="fa-solid fa-box-open"></i></div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-gray-800">Part Request - Red Part</p>
+                                    <p class="text-[10px] text-gray-500">SN: 11223344  |  Agus  |  28 Apr 2025 10:15</p>
+                                </div>
+                            </div>
+                            <!-- Activity Item 4 -->
+                            <div class="flex gap-3 relative">
+                                <div class="absolute left-3.5 top-8 bottom-[-16px] w-px bg-gray-200"></div>
+                                <div class="w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 z-10 border-2 border-white"><i class="fa-solid fa-check"></i></div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-gray-800">Visit Closed - BCA Semarang</p>
+                                    <p class="text-[10px] text-gray-500">SN: SS667788  |  Candra  |  27 Apr 2025 16:45</p>
+                                </div>
+                            </div>
+                            <!-- Activity Item 5 -->
+                            <div class="flex gap-3 relative">
+                                <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 z-10 border-2 border-white"><i class="fa-regular fa-calendar-check"></i></div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-gray-800">PM - Mandiri Surabaya</p>
+                                    <p class="text-[10px] text-gray-500">SN: 99887766  |  Dedi  |  27 Apr 2025 09:10</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Call to action Banner -->
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg p-3 text-white shadow-sm flex items-center gap-3">
+                        <div class="text-3xl opacity-80"><i class="fa-solid fa-calendar-plus"></i></div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-[11px] leading-tight mb-0.5">Jangan lewatkan satu pun kunjungan!</h4>
+                            <p class="text-[9px] text-blue-100 leading-snug">Atur jadwal PM/CM dengan mudah, pantau statusnya secara real-time.</p>
+                        </div>
+                        <button onclick="bukaModalKunjungan()" class="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-colors">
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Form (Hidden by Default) -->
+    <div id="modalKunjungan" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center transition-opacity">
+        <div class="bg-white rounded-lg shadow-xl w-[500px] overflow-hidden">
+            <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+                <h3 class="font-bold text-sm"><i class="fa-solid fa-plus-circle mr-2"></i>Catat Kunjungan Baru</h3>
+                <button onclick="tutupModalKunjungan()" class="hover:text-gray-300"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <!-- Dropdown Unit Kerja -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Pilih Unit Kerja / Lokasi</label>
+                    <select id="selectUnit" onchange="filterSN()" class="w-full border rounded p-2 text-sm focus:ring focus:ring-blue-200 outline-none">
+                        <option value="">-- Pilih Lokasi --</option>
+                        <option value="BRI_SEMARANG">BRI KC Semarang Pattimura</option>
+                        <option value="BCA_PEKALONGAN">BCA KCU Pekalongan</option>
+                    </select>
+                </div>
+
+                <!-- Dropdown SN -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Serial Number (SN)</label>
+                    <select id="selectSN" onchange="cekStatusMesin()" disabled class="w-full border rounded p-2 text-sm bg-gray-100 focus:ring focus:ring-blue-200 outline-none">
+                        <option value="">-- Pilih Lokasi Dahulu --</option>
+                    </select>
+                </div>
+
+                <!-- Kotak Alert Logika Bisnis -->
+                <div id="alertInfo" class="hidden p-3 rounded text-sm space-y-2 border"></div>
+
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal Kunjungan</label>
+                        <input type="date" id="inputTanggal" class="w-full border rounded p-2 text-sm" value="2025-04-29">
+                    </div>
+                     <div class="flex-1">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Jenis Kunjungan</label>
+                        <select class="w-full border rounded p-2 text-sm">
+                            <option value="PM">Preventive (PM)</option>
+                            <option value="CM">Corrective (CM)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t flex justify-end gap-2">
+                    <button onclick="tutupModalKunjungan()" class="px-4 py-2 border rounded text-gray-600 text-sm hover:bg-gray-50">Batal</button>
+                    <button onclick="simpanKunjungan()" class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 font-semibold shadow">Simpan Jadwal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts for Charts and Logic -->
+    <script>
+        // Setup Chart.js Defaults
+        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        Chart.defaults.color = '#6b7280';
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(17, 24, 39, 0.9)';
+        Chart.defaults.plugins.tooltip.padding = 10;
+        Chart.defaults.plugins.tooltip.cornerRadius = 4;
+
+        // 1. Trend Bar Chart (Stacked)
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctxTrend, {
+            type: 'bar',
+            data: {
+                labels: ['Mei
+2024', 'Jun
+2024', 'Jul
+2024', 'Agu
+2024', 'Sep
+2024', 'Okt
+2024', 'Okt
+2024', 'Nov
+2024', 'Des
+2024', 'Jan
+2025', 'Feb
+2025', 'Mar
+2025', 'Apr
+2025'],
+                datasets: [
+                    { label: 'PM', data: [200, 220, 230, 240, 250, 300, 300, 320, 370, 380, 400, 420, 450], backgroundColor: '#3b82f6', barThickness: 12, borderRadius: {topLeft: 2, topRight: 2} },
+                    { label: 'CM', data: [15, 12, 18, 10, 25, 15, 20, 18, 12, 10, 15, 18, 25], backgroundColor: '#fb923c', barThickness: 12, borderRadius: {topLeft: 2, topRight: 2} }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top', align: 'start', labels: { usePointStyle: true, boxWidth: 8, font: {size: 10} } }
+                },
+                scales: {
+                    x: { stacked: false, grid: { display: false }, ticks: { font: {size: 9}, maxRotation: 0 } },
+                    y: { stacked: false, beginAtZero: true, max: 500, grid: { borderDash: [2, 2], color: '#e5e7eb' }, border: {display: false}, ticks: { font: {size: 9}, stepSize: 100 } }
+                }
+            }
+        });
+
+        // 2. Distribusi Zona Doughnut
+        const ctxZona = document.getElementById('zonaChart').getContext('2d');
+        new Chart(ctxZona, {
+            type: 'doughnut',
+            data: {
+                labels: ['Jawa Tengah', 'Jawa Timur', 'DIY', 'Jawa Barat', 'Jakarta', 'Lainnya'],
+                datasets: [{
+                    data: [224, 175, 119, 100, 68, 100],
+                    backgroundColor: ['#1d4ed8', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#9ca3af'],
+                    borderWidth: 0,
+                    cutout: '65%'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true, pointStyle: 'circle', boxWidth: 6, font: {size: 10}, color: '#374151',
+                            generateLabels: (chart) => {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const meta = chart.getDatasetMeta(0);
+                                        const ds = data.datasets[0];
+                                        const value = ds.data[i];
+                                        const total = ds.data.reduce((a, b) => a + b, 0);
+                                        const pct = ((value/total)*100).toFixed(1) + '%';
+                                        return { text: `${label}     ${pct}     ${value}`, fillStyle: ds.backgroundColor[i], hidden: false, index: i, fontColor: '#4b5563' };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3. Status Garansi Doughnut
+        const ctxGaransi = document.getElementById('garansiChart').getContext('2d');
+        new Chart(ctxGaransi, {
+            type: 'doughnut',
+            data: {
+                labels: ['Masih Garansi', 'Expired', 'Akan Habis ≤ 90 Hari'],
+                datasets: [{
+                    data: [536, 168, 82],
+                    backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                    borderWidth: 0,
+                    cutout: '65%'
+                }]
+            },
+             options: {
+                responsive: true, maintainAspectRatio: false,
+                layout: { padding: { right: 80 } }, // Make room for legend
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true, pointStyle: 'circle', boxWidth: 6, font: {size: 10}, color: '#374151', padding: 15,
+                            generateLabels: (chart) => {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const ds = data.datasets[0];
+                                        const value = ds.data[i];
+                                        const total = ds.data.reduce((a, b) => a + b, 0);
+                                        const pct = ((value/total)*100).toFixed(1) + '%';
+                                        return { text: `${label}   ${pct}   ${value}`, fillStyle: ds.backgroundColor[i], hidden: false, index: i, fontColor: '#4b5563' };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 4. Top Customer Horizontal Bar
+        const ctxCust = document.getElementById('custChart').getContext('2d');
+        new Chart(ctxCust, {
+            type: 'bar',
+            data: {
+                labels: ['BRI', 'BCA', 'Mandiri', 'BNI', 'BSI'],
+                datasets: [{
+                    data: [278, 162, 121, 98, 54],
+                    backgroundColor: '#3b82f6',
+                    barThickness: 16,
+                    borderRadius: 2
+                }]
+            },
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false, max: 350 },
+                    y: { grid: { display: false }, border: {display: false}, ticks: { font: {size: 11}, color: '#374151' } }
+                },
+                animation: {
+                    onComplete: function() {
+                        const chartInstance = this;
+                        const ctx = chartInstance.ctx;
+                        ctx.font = Chart.helpers.fontString(10, 'normal', "'Segoe UI'");
+                        ctx.fillStyle = '#4b5563';
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'middle';
+                        this.data.datasets.forEach(function (dataset, i) {
+                            const meta = chartInstance.getDatasetMeta(i);
+                            meta.data.forEach(function (bar, index) {
+                                const data = dataset.data[index];
+                                ctx.fillText(data, bar.x + 5, bar.y);
+                            });
+                        });
+                    }
+                }
+            }
+        });
+
+        // 5. Type Mesin Doughnut
+        const ctxType = document.getElementById('typeChart').getContext('2d');
+        new Chart(ctxType, {
+            type: 'doughnut',
+            data: {
+                labels: ['NCR', 'Hyosung', 'Diebold', 'OKI', 'Lainnya'],
+                datasets: [{
+                    data: [332, 195, 123, 72, 64],
+                    backgroundColor: ['#1d4ed8', '#3b82f6', '#9ca3af', '#f59e0b', '#d1d5db'],
+                    borderWidth: 0,
+                    cutout: '65%'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                layout: { padding: { right: 80 } },
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true, pointStyle: 'circle', boxWidth: 6, font: {size: 10}, color: '#374151', padding: 10,
+                            generateLabels: (chart) => {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const ds = data.datasets[0];
+                                        const value = ds.data[i];
+                                        const total = ds.data.reduce((a, b) => a + b, 0);
+                                        const pct = ((value/total)*100).toFixed(1) + '%';
+                                        return { text: `${label}    ${pct}   ${value}`, fillStyle: ds.backgroundColor[i], hidden: false, index: i, fontColor: '#4b5563' };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Modal Logic
+        const databaseMesin = {
+            'BRI_SEMARANG': [
+                { sn: 'SEM-001', merk: 'Hyosung', status: 'Non-Garansi', last_visit: 2 },
+                { sn: 'SEM-002', merk: 'Diebold', status: 'Garansi (Sisa 80 Hari)', last_visit: 0 },
+                { sn: 'MFC-SEM99', merk: 'NCR', status: 'Garansi', last_visit: 1 }
+            ],
+            'BCA_PEKALONGAN': [
+                { sn: 'MFC180905568R', merk: 'NCR', status: 'Non-Garansi', last_visit: 1 },
+                { sn: 'MFC-PEK22', merk: 'NCR', status: 'Garansi', last_visit: 0 }
+            ]
+        };
+
+        const jadwalAktif = [ { sn: 'MFC-SEM99', tanggal: '2025-04-29' } ];
+
+        function bukaModalKunjungan() { document.getElementById('modalKunjungan').classList.remove('hidden'); }
+        function tutupModalKunjungan() { document.getElementById('modalKunjungan').classList.add('hidden'); }
+
+        function filterSN() {
+            const unit = document.getElementById('selectUnit').value;
+            const snDropdown = document.getElementById('selectSN');
+            if (unit === "") {
+                snDropdown.disabled = true;
+                snDropdown.innerHTML = '<option value="">-- Pilih Lokasi Dahulu --</option>';
+            } else {
+                snDropdown.disabled = false;
+                let options = '<option value="">-- Pilih Mesin --</option>';
+                databaseMesin[unit].forEach(m => options += `<option value="${m.sn}">${m.sn} (${m.merk})</option>`);
+                snDropdown.innerHTML = options;
+            }
+        }
+
+        function cekStatusMesin() {
+            const unit = document.getElementById('selectUnit').value;
+            const snDipilih = document.getElementById('selectSN').value;
+            const alertBox = document.getElementById('alertInfo');
+            if (snDipilih === "") return alertBox.classList.add('hidden');
+
+            const detail = databaseMesin[unit].find(m => m.sn === snDipilih);
+            let html = detail.status.includes('Non-Garansi') ? `<div class="text-red-800 bg-red-50 p-2 rounded">Perhatian: Mesin Non-Garansi</div>` : `<div class="text-green-800 bg-green-50 p-2 rounded">Garansi Aktif</div>`;
+            alertBox.innerHTML = html;
+            alertBox.classList.remove('hidden');
+        }
+
+        function simpanKunjungan() {
+            const sn = document.getElementById('selectSN').value;
+            const tgl = document.getElementById('inputTanggal').value;
+            if(jadwalAktif.some(j => j.sn === sn && j.tanggal === tgl)) {
+                Swal.fire({icon: 'error', title: 'Jadwal Ganda!'});
+            } else {
+                Swal.fire({icon: 'success', title: 'Disimpan'}).then(tutupModalKunjungan);
+            }
+        }
+    </script>
+</body>
+</html>
